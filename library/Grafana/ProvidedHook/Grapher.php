@@ -37,23 +37,24 @@ class Grapher extends GrapherHook
     protected $enableLink = true;
     protected $defaultDashboard = "icinga2-default";
     protected $defaultDashboardPanelId = "1";
-    protected $defaultOrgId = "1";
-    protected $shadows = false;
-    protected $defaultDashboardStore = "db";
-    protected $dataSource = null;
-    protected $accessMode = "proxy";
-    protected $proxyTimeout = "5";
-    protected $refresh = "no";
-    protected $title = "<h2>Performance Graph</h2>";
-    protected $custvardisable = "grafana_graph_disable";
-    protected $custvarconfig = "grafana_graph_config";
-    protected $repeatable = "no";
-    protected $numberMetrics = "1";
-    protected $debug = false;
-    protected $SSLVerifyPeer = false;
-    protected $SSLVerifyHost = "0";
-    protected $cacheTime = 300;
-    protected $grafanaVersion = "0";
+    protected $defaultGraph            = null;
+    protected $defaultOrgId            = "1";
+    protected $shadows                 = false;
+    protected $defaultDashboardStore   = "db";
+    protected $dataSource              = null;
+    protected $accessMode              = "proxy";
+    protected $proxyTimeout            = "5";
+    protected $refresh                 = "no";
+    protected $title                   = "<h2>Performance Graph</h2>";
+    protected $custvardisable          = "grafana_graph_disable";
+    protected $custvarconfig           = "grafana_graph_config";
+    protected $repeatable              = "no";
+    protected $numberMetrics           = "1";
+    protected $debug                   = false;
+    protected $SSLVerifyPeer           = false;
+    protected $SSLVerifyHost           = "0";
+    protected $cacheTime                = 300;
+    protected $grafanaVersion           = "0";
     protected $defaultdashboarduid;
 
     protected function init()
@@ -94,6 +95,7 @@ class Grapher extends GrapherHook
             );
         }
         $this->defaultDashboardPanelId = $this->config->get('defaultdashboardpanelid', $this->defaultDashboardPanelId);
+        $this->defaultGraph = $this->config->get('defaultgraph', $this->defaultGraph);
         $this->defaultOrgId = $this->config->get('defaultorgid', $this->defaultOrgId);
         $this->grafanaTheme = $this->config->get('theme', $this->grafanaTheme);
         $this->defaultDashboardStore = $this->config->get('defaultdashboardstore', $this->defaultDashboardStore);
@@ -178,9 +180,10 @@ class Grapher extends GrapherHook
         if ($this->graphConfig->hasSection(strtok($serviceName,
                 ' ')) == false && ($this->graphConfig->hasSection($serviceName) == false)) {
             $serviceName = $serviceCommand;
-            if ($this->graphConfig->hasSection($serviceCommand) == false && $this->defaultDashboard == 'none') {
-                return null;
-            }
+            if ($this->graphConfig->hasSection($serviceCommand) == False) {
+                if ($this->defaultDashboard == 'none' && $this->defaultGraph == null) return NULL;
+                if ($this->defaultGraph != null) $serviceName = $this->defaultGraph;
+            } 
         }
 
         $this->dashboard = $this->getGraphConfigOption($serviceName, 'dashboard', $this->defaultDashboard);
